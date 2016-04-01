@@ -9,6 +9,7 @@ import os
 import socket
 import struct
 import sys
+import traceback
 
 PY3 = sys.version_info >= (3,0)
 if PY3:
@@ -96,7 +97,8 @@ class NMDbusInterface(object):
             if hasattr(val, 'items'):
                 return dict([(x, self.wrap(y)) for x, y in val.items()])
             else:
-                if (isinstance(val, dbus.Struct) or isinstance(val, dbus.ByteArray)):
+                if (isinstance(val, dbus.Struct) or \
+                        isinstance(val, dbus.ByteArray)):
                     return val
                 return [self.wrap(x) for x in val]
         return val
@@ -177,7 +179,7 @@ class Connection(NMDbusInterface):
     has_secrets = ['802-1x', '802-11-wireless-security', 'cdma', 'gsm', 'pppoe', 'vpn']
 
     def GetSecrets(self, name=None):
-        if name == None:
+        if name is None:
             settings = self.GetSettings()
             for key in self.has_secrets:
                 if key in settings:
@@ -189,6 +191,14 @@ class Connection(NMDbusInterface):
             return self.make_proxy_call('GetSecrets')(name)
         except:
             return {}
+
+    def Delete(self, name=None):
+        try:
+            debug("Attempting to delete connection", None)
+            self.make_proxy_call('Delete')
+            debug("Done deleting connection", None)
+        except:
+            debug(traceback.print_exc(), None)
 
     def postprocess(self, name, val):
         if name == 'GetSettings':
