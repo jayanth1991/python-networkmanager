@@ -10,6 +10,7 @@ import socket
 import struct
 import sys
 import traceback
+import logging
 
 PY3 = sys.version_info >= (3, 0)
 if PY3:
@@ -218,8 +219,10 @@ class Connection(NMDbusInterface):
             debug("Attempting to delete connection", None)
             self.make_proxy_call('Delete')()
             debug("Done deleting connection", None)
+            return True
         except:
-            debug(traceback.print_exc(), None)
+            logging.error(traceback.print_exc(), None)
+            return False
 
     def postprocess(self, name, val):
         if name == 'GetSettings':
